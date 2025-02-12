@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Remove database: {{ database_name }}{% endblock %}
+
+{% block crumbs %}
+{{ crumbs.nav(request=request, database=database_name) }}
+{% endblock %}
+
+{% block content %}
+<h1>Remove database: {{ database_name }}</h1>
+<p>Are you sure you want to remove the database <code>{{ database_name }}</code>?</p>
+
+{% if delete_configured and paths_to_delete %}
+  <p>The following files will be deleted from disk:</p>
+  <ul class="bullets">
+    {% for path in paths_to_delete %}
+      <li>{{ path }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<form class="core" action="{{ request.path }}" method="post">
+  <input type="hidden" name="csrftoken" value="{{ csrftoken() }}">
+  <input type="hidden" name="database" value="{{ database_name }}">
+  <input type="submit" value="Remove database">
+</form>
+{% endblock %}
