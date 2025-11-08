@@ -1,4 +1,6 @@
-from datasette import hookimpl, Response, Permission
+from datasette import Response, hookimpl
+from datasette.permissions import Action
+from datasette.resources import DatabaseResource
 import pathlib
 
 
@@ -27,8 +29,11 @@ async def remove_database(datasette, request):
     if database_name not in datasette.databases:
         return Response.text("Database not found", status=404)
     # Check permissions
-    if not await datasette.permission_allowed(
-        request.actor, "remove-database", database_name
+    resource = DatabaseResource(database_name)
+    if not await datasette.allowed(
+        actor=request.actor,
+        action="remove-database",
+        resource=resource,
     ):
         return Response.text("Permission denied", status=403)
     if request.method == "POST":
@@ -53,15 +58,12 @@ async def remove_database(datasette, request):
 
 
 @hookimpl
-def register_permissions(datasette):
+def register_actions(datasette):
     return [
-        Permission(
+        Action(
             name="remove-database",
-            abbr=None,
             description="Remove database",
-            takes_database=True,
-            takes_resource=False,
-            default=False,
+            resource_class=DatabaseResource,
         )
     ]
 
@@ -74,11 +76,11 @@ def register_routes():
 @hookimpl
 def database_actions(datasette, actor, database):
     async def inner():
-        if not await datasette.permission_allowed(
-            actor,
-            "remove-database",
-            resource=database,
-            default=False,
+        resource = DatabaseResource(database)
+        if not await datasette.allowed(
+            actor=actor,
+            action="remove-database",
+            resource=resource,
         ):
             return []
         return [
