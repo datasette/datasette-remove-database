@@ -1,6 +1,6 @@
 [project]
 name = "datasette-remove-database"
-version = "0.1a1"
+version = "0.1a2"
 description = "Remove a database from Datasette"
 readme = "README.md"
 authors = [{name = "Simon Willison"}]
